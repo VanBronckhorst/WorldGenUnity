@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class EndlessTerrain : MonoBehaviour
 {
-    const float scale = 2f;
     const float viewerMoveThresholdForUpdate = 25f;
     const float sqrViewerMoveThresholdForUpdate = viewerMoveThresholdForUpdate * viewerMoveThresholdForUpdate;
 
@@ -28,14 +27,14 @@ public class EndlessTerrain : MonoBehaviour
         mapGenerator = FindObjectOfType<MapGenerator>();
 
         maxViewDist = levelsOfDetail[levelsOfDetail.Length - 1].visibleDstThreshold;
-        chunkSize = MapGenerator.mapChunkSize - 1;
+        chunkSize = mapGenerator.mapChunkSize - 1;
         chunksVisibleInViewDist = Mathf.RoundToInt(maxViewDist / chunkSize);
 
         UpdateVisibleChunks();
     }
 
     private void Update() {
-        viewerPosition = new Vector2(viewer.position.x, viewer.position.z) / scale;
+        viewerPosition = new Vector2(viewer.position.x, viewer.position.z) / mapGenerator.terrainData.uniformScale;
 
         if ((oldViewerPosition - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForUpdate) {
             oldViewerPosition = viewerPosition;
@@ -99,9 +98,9 @@ public class EndlessTerrain : MonoBehaviour
             meshCollider = meshObject.AddComponent<MeshCollider>();
 
 
-            meshObject.transform.position = posV3 * scale;
+            meshObject.transform.position = posV3 * mapGenerator.terrainData.uniformScale;
             meshObject.transform.parent = parent;
-            meshObject.transform.localScale = Vector3.one * scale;
+            meshObject.transform.localScale = Vector3.one * mapGenerator.terrainData.uniformScale;
             SetVisible(false);
 
             lodMeshes = new LODMesh[levels.Length];
@@ -168,9 +167,6 @@ public class EndlessTerrain : MonoBehaviour
         void onMapDataReceived(MapData mapData) {
             this.mapData = mapData;
             this.mapDatareceived = true;
-
-            Texture2D texture = TextureGenerator.TextureFromColorMap(mapData.colorMap, MapGenerator.mapChunkSize, MapGenerator.mapChunkSize);
-            meshRenderer.material.mainTexture = texture;
 
             UpdateTerrainChunk();
         }
